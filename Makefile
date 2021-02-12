@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall
-EXE = mat_mult
+EXE = app
 
 $(EXE): main.o
 	$(CC) -o $@ $^
