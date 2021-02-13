@@ -109,8 +109,8 @@ struct thread_data {
 
 void *parallel_mult(void *arg)
 {
-    int id = *(int *) arg;
-    printf("thread %d running parallel_mult()\n", id);
+    thread_data data = *(thread_data *) arg;
+    printf("thread %d running parallel_mult()\n", data.thread_num);
     return NULL;
 }
 
@@ -134,16 +134,19 @@ int main(int argc, char *argv[])
     m_3 = empty_matrix(size);
 
     pthread_t threads[NUM_THREADS];
-    int thread_num[NUM_THREADS];
+    thread_data data[NUM_THREADS];
     for (int i = 0; i < NUM_THREADS; i++) {
-        thread_num[i] = i;
-        pthread_create(&threads[i], NULL, parallel_mult, &thread_num[i]);
+        data[i].thread_num = i;
+        data[i].A = m_1;
+        data[i].B = m_2;
+        data[i].C = m_3;
+        data[i].matrix_size = size;
+        pthread_create(&threads[i], NULL, parallel_mult, &data[i]);
     }
 
     for (int i = 0; i < NUM_THREADS; i++) {
         pthread_join(threads[i], NULL);
     }
-
 
     serial_mult(m_3, m_1, m_2, size);
 
