@@ -107,10 +107,60 @@ struct thread_data {
 };
 
 
+void print_thread_data(thread_data *d)
+{
+    printf("thread_data.thread_num: %d\n", d->thread_num);
+    printf("thread_data.A: %p\n", d->A);
+    printf("thread_data.B: %p\n", d->B);
+    printf("thread_data.C: %p\n", d->C);
+    printf("thread_data.matrix_size: %d\n", d->matrix_size);
+}
+
+
 void *parallel_mult(void *arg)
 {
     thread_data data = *(thread_data *) arg;
-    printf("thread %d running parallel_mult()\n", data.thread_num);
+    // calculate this thread's section of the matrix to work in from the thread id
+    int n = data.matrix_size;
+    int id = data.thread_num;
+    int num_rows = n / NUM_THREADS;
+    int start_row = id * num_rows;
+    float **mat_A = data.A;
+    float **mat_B = data.B;
+    float **dest = data.C;
+    for (int i = start_row; i < start_row + num_rows; i++) {
+        for (int j = 0; j < n; j++) {
+            for (int k = 0; k < n; k++) {
+                dest[i][j] += mat_A[i][k] * mat_B[k][j];
+            }
+        }
+    }
+    return NULL;
+}
+
+
+void *thread_test(void *arg)
+{
+    thread_data data = *(thread_data *) arg;
+    float **m = data.C;
+
+    switch (data.thread_num) {
+        case 0:
+            print_matrix(data.A, data.matrix_size, "thread 0 printing matrix A\n");
+            m[1][2] = 1118;
+            break;
+        case 1:
+            print_matrix(data.B, data.matrix_size, "thread 1 printing matrix B\n");
+            data.B[0][0] = 111.1234;
+            break;
+        case 2:
+            print_matrix(data.C, data.matrix_size, "thread 2 printing matrix C\n");
+            data.C[0][0] = 99999.1234;
+            break;
+        default:
+            break;
+    }
+
     return NULL;
 }
 
@@ -124,14 +174,15 @@ int main(int argc, char *argv[])
 
     float **m_1 = NULL;
     m_1 = random_matrix(size);
-    print_matrix(m_1, size, "A");
+    print_matrix(m_1, size, "A:");
 
     float **m_2 = NULL;
     m_2 = ident_matrix(size);
-    print_matrix(m_2, size, "B");
+    print_matrix(m_2, size, "B:");
 
     float **m_3 = NULL;
     m_3 = empty_matrix(size);
+    print_matrix(m_3, size, "C:");
 
     pthread_t threads[NUM_THREADS];
     thread_data data[NUM_THREADS];
@@ -148,9 +199,9 @@ int main(int argc, char *argv[])
         pthread_join(threads[i], NULL);
     }
 
-    serial_mult(m_3, m_1, m_2, size);
-
-    print_matrix(m_3, size, "C = AxB");
+    print_matrix(m_1, size, "checking value of A");
+    print_matrix(m_2, size, "checking value of B");
+    print_matrix(m_3, size, "checking value of C");
 
     return 0;
 }
