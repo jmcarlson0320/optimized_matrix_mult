@@ -203,5 +203,9 @@ int main(int argc, char *argv[])
     print_matrix(m_2, size, "checking value of B");
     print_matrix(m_3, size, "checking value of C");
 
+    free_matrix(m_1, size);
+    free_matrix(m_2, size);
+    free_matrix(m_3, size);
+
     return 0;
 }
