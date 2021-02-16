@@ -1,9 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <pthread.h>
 
-#define NUM_THREADS 3
+#define DEFAULT_SIZE 3
+#define DEFAULT_THREADS 2
+
+void usage(void)
+{
+    printf("usage: ./app [-n <size>] [-t <number of threads>]\n");
+}
 
 float **random_matrix(int n)
 {
@@ -88,7 +95,6 @@ void serial_mult(float **c, float **a, float **b, int n)
 {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            c[i][j] = 0.0f;
             for (int k = 0; k < n; k++) {
                 c[i][j] += a[i][k] * b[k][j];
             }
@@ -104,6 +110,7 @@ struct thread_data {
     float **B;
     float **C;
     int matrix_size;
+    int num_threads;
 };
 
 
@@ -120,14 +127,14 @@ void print_thread_data(thread_data *d)
 void *parallel_mult(void *arg)
 {
     thread_data data = *(thread_data *) arg;
-    // calculate this thread's section of the matrix to work in from the thread id
     int n = data.matrix_size;
     int id = data.thread_num;
-    int num_rows = n / NUM_THREADS;
+    int num_rows = n / data.num_threads;
     int start_row = id * num_rows;
     float **mat_A = data.A;
     float **mat_B = data.B;
     float **dest = data.C;
+
     for (int i = start_row; i < start_row + num_rows; i++) {
         for (int j = 0; j < n; j++) {
             for (int k = 0; k < n; k++) {
@@ -135,6 +142,7 @@ void *parallel_mult(void *arg)
             }
         }
     }
+
     return NULL;
 }
 
@@ -167,11 +175,37 @@ void *thread_test(void *arg)
 
 int main(int argc, char *argv[])
 {
-    printf("matrix multiplier\n");
-    int size = 3;
-    if (argc == 2)
-        size = atoi(argv[1]);
+    int size = DEFAULT_SIZE;
+    int num_threads = DEFAULT_THREADS;
+    int invalid_args = 0;
 
+    argv++;
+    argc--;
+    while (argc > 0 && !invalid_args) {
+        if (strcmp(argv[0], "-n") == 0 && argv[1] != NULL) {
+            argv++;
+            size = atoi(argv[0]);
+            argc--;
+        } else if (strcmp(argv[0], "-t") == 0 && argv[1] != NULL) {
+            argv++;
+            num_threads = atoi(argv[0]);
+            argc--;
+        } else {
+            invalid_args = 1;
+        }
+        argv++;
+        argc--;
+    }
+
+    if (invalid_args) {
+        usage();
+        exit(0);
+    }
+
+    printf("size: %d\n", size);
+    printf("threads: %d\n", num_threads);
+
+    /*
     float **m_1 = NULL;
     m_1 = random_matrix(size);
     print_matrix(m_1, size, "A:");
@@ -206,6 +240,7 @@ int main(int argc, char *argv[])
     free_matrix(m_1, size);
     free_matrix(m_2, size);
     free_matrix(m_3, size);
+    */
 
     return 0;
 }
