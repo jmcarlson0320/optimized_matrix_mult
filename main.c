@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #define DEFAULT_SIZE 3
-#define DEFAULT_THREADS 2
+#define DEFAULT_THREADS 1
 
 void usage(void)
 {
@@ -121,6 +121,7 @@ void print_thread_data(thread_data *d)
     printf("thread_data.B: %p\n", d->B);
     printf("thread_data.C: %p\n", d->C);
     printf("thread_data.matrix_size: %d\n", d->matrix_size);
+    printf("thread_data.num_threads: %d\n", d->num_threads);
 }
 
 
@@ -205,31 +206,27 @@ int main(int argc, char *argv[])
     printf("size: %d\n", size);
     printf("threads: %d\n", num_threads);
 
-    /*
-    float **m_1 = NULL;
-    m_1 = random_matrix(size);
+    float **m_1 = random_matrix(size);
+    float **m_2 = ident_matrix(size);
+    float **m_3 = empty_matrix(size);
+
     print_matrix(m_1, size, "A:");
-
-    float **m_2 = NULL;
-    m_2 = ident_matrix(size);
     print_matrix(m_2, size, "B:");
-
-    float **m_3 = NULL;
-    m_3 = empty_matrix(size);
     print_matrix(m_3, size, "C:");
 
-    pthread_t threads[NUM_THREADS];
-    thread_data data[NUM_THREADS];
-    for (int i = 0; i < NUM_THREADS; i++) {
+    pthread_t threads[num_threads];
+    thread_data data[num_threads];
+    for (int i = 0; i < num_threads; i++) {
         data[i].thread_num = i;
         data[i].A = m_1;
         data[i].B = m_2;
         data[i].C = m_3;
         data[i].matrix_size = size;
+        data[i].num_threads = num_threads;
         pthread_create(&threads[i], NULL, parallel_mult, &data[i]);
     }
 
-    for (int i = 0; i < NUM_THREADS; i++) {
+    for (int i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL);
     }
 
@@ -240,7 +237,6 @@ int main(int argc, char *argv[])
     free_matrix(m_1, size);
     free_matrix(m_2, size);
     free_matrix(m_3, size);
-    */
 
     return 0;
 }
