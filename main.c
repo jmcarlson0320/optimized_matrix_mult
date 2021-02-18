@@ -150,11 +150,14 @@ void *parallel_mult(void *arg)
 
     printf("thread #: %d\n", id);
 
+    float sum;
     for (int i = start_row; i < start_row + num_rows; i++) {
         for (int j = 0; j < n; j++) {
+            sum = 0.0f;
             for (int k = 0; k < n; k++) {
-                dest[i][j] += mat_A[i][k] * mat_B[k][j];
+                sum += mat_A[i][k] * mat_B[j][k];
             }
+            dest[i][j] = sum;
         }
     }
 
@@ -162,8 +165,16 @@ void *parallel_mult(void *arg)
 }
 
 
-void convert_to_col_maj_order(float **mat, int n)
+void transpose_matrix(float **mat, int n)
 {
+    float tmp;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            tmp = mat[i][j];
+            mat[i][j] = mat[j][i];
+            mat[j][i] = tmp;
+        }
+    }
 }
 
 
@@ -240,6 +251,7 @@ int main(int argc, char *argv[])
     if (num_threads == 1) {
         serial_mult(m_3, m_1, m_2, size);
     } else {
+        transpose_matrix(m_2, size);
         pthread_t threads[num_threads];
         thread_data data[num_threads];
         for (int i = 0; i < num_threads; i++) {
@@ -262,11 +274,13 @@ int main(int argc, char *argv[])
         for (int i = start; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 for (int k = 0; k < size; k++) {
-                    m_3[i][j] += m_1[i][k] * m_2[k][j];
+                    m_3[i][j] += m_1[i][k] * m_2[j][k];
                 }
             }
         }
+        transpose_matrix(m_2, size);
     }
+
 
     if (print_to_console) {
         print_matrix(m_3, size, "C = AxB");
