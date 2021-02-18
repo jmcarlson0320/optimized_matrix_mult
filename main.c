@@ -12,12 +12,40 @@ void usage(void)
     printf("usage: ./app [-n <size>] [-t <number of threads>]\n");
 }
 
-float **random_matrix(int n)
+
+float **allocate_matrix(int n)
 {
     float **mat = malloc(n * sizeof(float *));
+    if (!mat) {
+        printf("error allocating matrix of size %d\n", n);
+        exit(0);
+    }
+
     for (int i = 0; i < n; i++) {
         mat[i] = malloc(n * sizeof(float));
+        if (!mat) {
+            printf("error allocating matrix of size %d\n", n);
+            exit(0);
+        }
     }
+
+    return mat;
+}
+
+
+void free_matrix(float **mat, int n)
+{
+    for (int i = 0; i < n; i++) {
+        free(mat[i]);
+    }
+
+    free(mat);
+}
+
+
+float **random_matrix(int n)
+{
+    float **mat = allocate_matrix(n);
 
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
@@ -32,10 +60,7 @@ float **random_matrix(int n)
 
 float **ident_matrix(int n)
 {
-    float **mat = malloc(n * sizeof(float *));
-    for (int i = 0; i < n; i++) {
-        mat[i] = malloc(n * sizeof(float));
-    }
+    float **mat = allocate_matrix(n);
 
     srand(time(NULL));
     for (int i = 0; i < n; i++) {
@@ -53,10 +78,7 @@ float **ident_matrix(int n)
 
 float **empty_matrix(int n)
 {
-    float **mat = malloc(n * sizeof(float *));
-    for (int i = 0; i < n; i++) {
-        mat[i] = malloc(n * sizeof(float));
-    }
+    float **mat = allocate_matrix(n);
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -65,16 +87,6 @@ float **empty_matrix(int n)
     }
 
     return mat;
-}
-
-
-void free_matrix(float **mat, int n)
-{
-    for (int i = 0; i < n; i++) {
-        free(mat[i]);
-    }
-
-    free(mat);
 }
 
 
@@ -214,33 +226,36 @@ int main(int argc, char *argv[])
     print_matrix(m_2, size, "B:");
     print_matrix(m_3, size, "C:");
 
-    pthread_t threads[num_threads];
-    thread_data data[num_threads];
-    for (int i = 0; i < num_threads; i++) {
-        data[i].thread_num = i;
-        data[i].A = m_1;
-        data[i].B = m_2;
-        data[i].C = m_3;
-        data[i].matrix_size = size;
-        data[i].num_threads = num_threads;
-        pthread_create(&threads[i], NULL, parallel_mult, &data[i]);
-    }
+    if (num_threads == 1) {
+        serial_mult(m_3, m_1, m_2, size);
+    } else {
+        pthread_t threads[num_threads];
+        thread_data data[num_threads];
+        for (int i = 0; i < num_threads; i++) {
+            data[i].thread_num = i;
+            data[i].A = m_1;
+            data[i].B = m_2;
+            data[i].C = m_3;
+            data[i].matrix_size = size;
+            data[i].num_threads = num_threads;
+            pthread_create(&threads[i], NULL, parallel_mult, &data[i]);
+        }
 
-    for (int i = 0; i < num_threads; i++) {
-        pthread_join(threads[i], NULL);
-    }
+        for (int i = 0; i < num_threads; i++) {
+            pthread_join(threads[i], NULL);
+        }
 
-    // calculate remainder
-    int remaining_rows = size % num_threads;
-    int start = size - remaining_rows;
-    for (int i = start; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            for (int k = 0; k < size; k++) {
-                m_3[i][j] += m_1[i][k] * m_2[k][j];
+        // calculate remainder
+        int remaining_rows = size % num_threads;
+        int start = size - remaining_rows;
+        for (int i = start; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                for (int k = 0; k < size; k++) {
+                    m_3[i][j] += m_1[i][k] * m_2[k][j];
+                }
             }
         }
     }
-
 
     print_matrix(m_1, size, "checking value of A");
     print_matrix(m_2, size, "checking value of B");
