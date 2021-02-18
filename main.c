@@ -148,6 +148,8 @@ void *parallel_mult(void *arg)
     float **mat_B = data.B;
     float **dest = data.C;
 
+    printf("thread #: %d\n", id);
+
     for (int i = start_row; i < start_row + num_rows; i++) {
         for (int j = 0; j < n; j++) {
             for (int k = 0; k < n; k++) {
@@ -157,6 +159,11 @@ void *parallel_mult(void *arg)
     }
 
     return NULL;
+}
+
+
+void convert_to_col_maj_order(float **mat, int n)
+{
 }
 
 
@@ -190,6 +197,7 @@ int main(int argc, char *argv[])
 {
     int size = DEFAULT_SIZE;
     int num_threads = DEFAULT_THREADS;
+    int print_to_console = 0;
     int invalid_args = 0;
 
     argv++;
@@ -203,6 +211,8 @@ int main(int argc, char *argv[])
             argv++;
             num_threads = atoi(argv[0]);
             argc--;
+        } else if (strcmp(argv[0], "-p") == 0) {
+            print_to_console = 1;
         } else {
             invalid_args = 1;
         }
@@ -222,8 +232,10 @@ int main(int argc, char *argv[])
     float **m_2 = ident_matrix(size);
     float **m_3 = empty_matrix(size);
 
-    print_matrix(m_1, size, "A:");
-    print_matrix(m_2, size, "B:");
+    if (print_to_console) {
+        print_matrix(m_1, size, "A:");
+        print_matrix(m_2, size, "B:");
+    }
 
     if (num_threads == 1) {
         serial_mult(m_3, m_1, m_2, size);
@@ -256,7 +268,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    print_matrix(m_3, size, "C = AxB");
+    if (print_to_console) {
+        print_matrix(m_3, size, "C = AxB");
+    }
 
     free_matrix(m_1, size);
     free_matrix(m_2, size);

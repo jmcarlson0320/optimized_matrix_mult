@@ -1,10 +1,10 @@
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -pg
 LIB = -lpthread
 EXE = app
 
 $(EXE): main.o
-	$(CC) -o $@ $^ $(LIB)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
 clean:
 	rm *.o $(EXE)
