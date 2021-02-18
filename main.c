@@ -230,6 +230,18 @@ int main(int argc, char *argv[])
         pthread_join(threads[i], NULL);
     }
 
+    // calculate remainder
+    int remaining_rows = size % num_threads;
+    int start = size - remaining_rows;
+    for (int i = start; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            for (int k = 0; k < size; k++) {
+                m_3[i][j] += m_1[i][k] * m_2[k][j];
+            }
+        }
+    }
+
+
     print_matrix(m_1, size, "checking value of A");
     print_matrix(m_2, size, "checking value of B");
     print_matrix(m_3, size, "checking value of C");
