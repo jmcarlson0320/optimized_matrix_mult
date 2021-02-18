@@ -224,7 +224,6 @@ int main(int argc, char *argv[])
 
     print_matrix(m_1, size, "A:");
     print_matrix(m_2, size, "B:");
-    print_matrix(m_3, size, "C:");
 
     if (num_threads == 1) {
         serial_mult(m_3, m_1, m_2, size);
@@ -257,9 +256,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    print_matrix(m_1, size, "checking value of A");
-    print_matrix(m_2, size, "checking value of B");
-    print_matrix(m_3, size, "checking value of C");
+    print_matrix(m_3, size, "C = AxB");
 
     free_matrix(m_1, size);
     free_matrix(m_2, size);
