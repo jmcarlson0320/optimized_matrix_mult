@@ -155,9 +155,17 @@ void *parallel_mult(void *arg)
         for (int j = 0; j < n; j++) {
             sum = 0.0f;
             for (int k = 0; k < n; k++) {
+#ifdef OPT_0
+                dest[i][j] += mat_A[i][k] * mat_B[k][j];
+#elif OPT_1
+                sum += mat_A[i][k] * mat_B[k][j];
+#else
                 sum += mat_A[i][k] * mat_B[j][k];
+#endif // OPT_0
             }
+#ifndef OPT_0
             dest[i][j] = sum;
+#endif // OPT_0
         }
     }
 
@@ -251,7 +259,9 @@ int main(int argc, char *argv[])
     if (num_threads == 1) {
         serial_mult(m_3, m_1, m_2, size);
     } else {
+#ifdef OPT_2
         transpose_matrix(m_2, size);
+#endif // OPT_2
         pthread_t threads[num_threads];
         thread_data data[num_threads];
         for (int i = 0; i < num_threads; i++) {
@@ -274,11 +284,17 @@ int main(int argc, char *argv[])
         for (int i = start; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 for (int k = 0; k < size; k++) {
+#ifdef OPT_2
                     m_3[i][j] += m_1[i][k] * m_2[j][k];
+#else
+                    m_3[i][j] += m_1[i][k] * m_2[k][j];
+#endif // OPT_2
                 }
             }
         }
+#ifdef OPT_2
         transpose_matrix(m_2, size);
+#endif // OPT_2
     }
 
 
