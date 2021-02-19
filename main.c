@@ -23,7 +23,7 @@ float **allocate_matrix(int n)
 
     for (int i = 0; i < n; i++) {
         mat[i] = malloc(n * sizeof(float));
-        if (!mat) {
+        if (!mat[i]) {
             printf("error allocating matrix of size %d\n", n);
             exit(0);
         }
