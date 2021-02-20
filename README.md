@@ -8,6 +8,8 @@ Specify optimization level by setting the OPT_LVL flag in the Makefile.
     - OPT_1 = accumulate sums locally
     - OPT_2 = accumulate sums locally AND transpose the second matrix
 
+Build the program.
+
 ```bash
 make
 ```
