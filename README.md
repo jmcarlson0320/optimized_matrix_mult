@@ -1,5 +1,8 @@
 # CS431 Homework 5
 
+This program performs matrix multiplication. It generates a random n x n
+matrix and multiplies it by the identity matrix.
+
 ## Installation
 
 Specify optimization level by setting the OPT_LVL flag in the Makefile.
