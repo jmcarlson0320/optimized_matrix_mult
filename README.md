@@ -2,9 +2,9 @@
 
 ## Installation
 
-'''
+```bash
 make
-'''
+```
 
 Specify optimization level by setting the OPT_LVL flag in the Makefile.
 
